@@ -10,6 +10,7 @@ class BaseConfig(BaseSettings):
     DEBUG: bool = False
     DATABASE_URL: str
     REDIS_URL: str = "redis://redis:6379/0"
+    ANTHROPIC_API_KEY: str | None = None
 
 
 class LocalConfig(BaseConfig):
