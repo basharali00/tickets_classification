@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from packages.classification.tasks.classify_ticket_task import classify_ticket_task
 from packages.tickets.enums import TicketStatus
 from packages.tickets.models import Ticket
 from packages.tickets.schemas import TicketCreate
@@ -16,7 +17,7 @@ def create_ticket_(session: Session, body: TicketCreate) -> Ticket:
             status_code=status.HTTP_409_CONFLICT,
             detail={"message": "Ticket already exists", "id": body.id},
         )
-
+    ticket_id = body.id
     ticket = Ticket(
         id=body.id,
         subject=body.subject,
@@ -30,4 +31,5 @@ def create_ticket_(session: Session, body: TicketCreate) -> Ticket:
     )
     session.add(ticket)
     session.commit()
+    classify_ticket_task.apply_async(args=(ticket_id,))
     return ticket

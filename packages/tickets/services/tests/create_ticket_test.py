@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from unittest import mock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,6 +11,14 @@ from packages.tickets.models import Ticket
 
 
 @pytest.fixture
+def enqueue_classification() -> Iterator[mock.MagicMock]:
+    with mock.patch(
+        "packages.tickets.services.create_ticket.classify_ticket_task.apply_async"
+    ) as apply_async:
+        yield apply_async
+
+
+@pytest.fixture
 def cleanup(test_session: Session) -> Iterator[None]:
     yield
     test_session.execute(delete(Ticket).where(Ticket.id == "t-1004"))
@@ -17,7 +26,10 @@ def cleanup(test_session: Session) -> Iterator[None]:
 
 
 def test_create_ticket_successful(
-    client: TestClient, test_session: Session, cleanup: None
+    client: TestClient,
+    test_session: Session,
+    cleanup: None,
+    enqueue_classification: mock.MagicMock,
 ) -> None:
     request_body = {
         "id": "t-1004",
@@ -52,6 +64,7 @@ def test_create_ticket_successful(
     assert ticket.status == "pending"
     assert ticket.attempts == 0
     assert ticket.data == {}
+    enqueue_classification.assert_called_once_with(args=("t-1004",))
 
 
 @pytest.fixture
@@ -65,7 +78,10 @@ def existing_ticket(test_session: Session) -> Iterator[Ticket]:
 
 
 def test_create_duplicate_ticket_raise_exception(
-    client: TestClient, existing_ticket: Ticket
+    client: TestClient,
+    existing_ticket: Ticket,
+    enqueue_classification: mock.MagicMock,
 ) -> None:
     response = client.post("/tickets", json={"id": "t-1", "body": "Second"})
     assert response.status_code == 409
+    enqueue_classification.assert_not_called()
