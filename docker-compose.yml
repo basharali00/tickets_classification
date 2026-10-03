@@ -19,6 +19,18 @@ services:
     ports:
       - "8000:80"
 
+  pytest:
+    <<: *app
+    restart: "no"
+    image: tickets:test
+    build:
+      context: .
+      target: test
+    command: pytest -x
+    environment:
+      PYTEST_ADDOPTS: "--color=yes"
+    profiles: ["test"]
+
   postgres:
     image: postgres:16
     restart: unless-stopped

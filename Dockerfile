@@ -22,6 +22,7 @@ ENV ENVIRONMENT=prod
 COPY ./alembic.ini .
 COPY ./migrations ./migrations
 COPY ./packages ./packages
+COPY ./dependencies ./dependencies
 
 # Commit metadata must not invalidate reusable filesystem layers.
 ARG RELEASE_SHA=unknown
@@ -38,6 +39,7 @@ COPY ./pyproject.toml .
 COPY ./alembic.ini .
 COPY ./migrations ./migrations
 COPY ./packages ./packages
+COPY ./dependencies ./dependencies
 
 CMD ["pytest"]
 

@@ -6,6 +6,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 
 from packages.database import engine
 from packages.settings import settings
+from packages.tickets.router import router as tickets_router
 
 
 @asynccontextmanager
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         middleware=[Middleware(GZipMiddleware)],
     )
+    app.include_router(tickets_router)
     return app
 
 

@@ -18,6 +18,9 @@ test = [
     "httpx>=0.27",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["packages"]
+
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI reads Depends()/Query() defaults as markers, so B008 does not apply.
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
