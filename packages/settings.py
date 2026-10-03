@@ -9,6 +9,7 @@ class BaseConfig(BaseSettings):
     ENVIRONMENT: str
     DEBUG: bool = False
     DATABASE_URL: str
+    REDIS_URL: str = "redis://redis:6379/0"
 
 
 class LocalConfig(BaseConfig):

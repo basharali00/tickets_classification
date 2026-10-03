@@ -12,12 +12,22 @@ x-app: &app
   depends_on:
     postgres:
       condition: service_healthy
+    redis:
+      condition: service_started
 
 services:
   api:
     <<: *app
     ports:
       - "8000:80"
+
+  celery_worker:
+    <<: *app
+    command: celery -A packages.main_celery worker -c 2 --loglevel=info
+
+  celery_beat:
+    <<: *app
+    command: celery -A packages.beat beat -s /tmp/celerybeat-schedule --loglevel=info
 
   pytest:
     <<: *app
@@ -48,6 +58,10 @@ services:
       interval: 2s
       retries: 15
       start_period: 10s
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
 
 volumes:
   pgdata:
