@@ -1,0 +1,41 @@
+x-app: &app
+  restart: unless-stopped
+  image: tickets:local
+  build:
+    context: .
+    target: local
+  env_file:
+    - path: .env
+      required: false
+  volumes:
+    - ./:/app
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  api:
+    <<: *app
+    ports:
+      - "8000:80"
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    command: -c fsync=off # faster local/test runs; not for production
+    environment:
+      POSTGRES_USER: tickets
+      POSTGRES_PASSWORD: tickets
+      POSTGRES_DB: tickets
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "tickets", "-d", "tickets"]
+      interval: 2s
+      retries: 15
+      start_period: 10s
+
+volumes:
+  pgdata:
