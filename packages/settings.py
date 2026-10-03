@@ -11,6 +11,7 @@ class BaseConfig(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str = "redis://redis:6379/0"
     ANTHROPIC_API_KEY: str | None = None
+    BASE_URL: str = "http://localhost:80"
 
 
 class LocalConfig(BaseConfig):
